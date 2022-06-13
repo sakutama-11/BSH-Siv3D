@@ -14,7 +14,9 @@ void Main()
         // draw lines
 		if (MouseR.down())
 		{
-				lines.remove_if([](const Line& l) { return Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 2; });
+				lines.remove_if([](const Line& l) {
+					return Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 2;
+				});
 		}
 		else if (MouseL.down())
 		{
@@ -49,6 +51,9 @@ void Main()
 
             }
         }
+		std::sort(points.begin(), points.end(), [](auto const& left, auto const& right) {
+			return std::atan2((left - Scene::Center()).y, (left - Scene::Center()).x) < std::atan2((right - Scene::Center()).y, (right - Scene::Center()).x);
+		});
 		Polygon(points).draw(Palette::Red);
 	}
 }
