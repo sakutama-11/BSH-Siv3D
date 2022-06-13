@@ -11,7 +11,45 @@ void Main()
 
 	while (System::Update())
 	{
-		//
+        // draw lines
+		if (MouseR.down())
+		{
+				lines.remove_if([](const Line& l) { return Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 2; });
+		}
+		else if (MouseL.down())
+		{
+			if (lineOpen)
+			{
+				lines << Line(startPos, Cursor::Pos());
+				lineOpen = false;
+			}
+			else
+			{
+				startPos = Cursor::Pos();
+				lineOpen = true;
+			}
+		}
+		if (lineOpen)
+		{
+			Line(startPos, Cursor::Pos()).draw(4, Palette::Red);
+		}
+		for (const auto& line : lines)
+		{
+			line.draw(4, Palette::Orange);
+		}
+		Array<Vec2> points;
+        for (int i = 0; i < lines.size(); i++)
+        {
+            for (int j = i+1; j < lines.size(); j++)
+            {
+				auto pos = lines[i].intersectsAt(lines[j]);
+				if (pos.has_value()) {
+					points << pos.value();
+				}
+
+            }
+        }
+		Polygon(points).draw(Palette::Red);
 	}
 }
 
