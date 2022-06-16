@@ -1,15 +1,12 @@
-﻿# include "stdafx.h"
-
-# ifndef   SAMPLE_POINT_HPP
+﻿# ifndef   SAMPLE_POINT_HPP
 # define   SAMPLE_POINT_HPP
 
-class Boundary;
+# include <Siv3D.hpp>
 
 class SamplePoint
 {
 	// variable
 	private:
-		Boundary m_boundary;
 		s3d::Circle m_point;
 		s3d::Line m_handle;
 		// 算出可能なので消してもよい
@@ -18,7 +15,7 @@ class SamplePoint
 
 	// acsessor
 	public:
-		SamplePoint( Boundary boundary, Vec2 pos );
+		SamplePoint( Vec2 pos );
 		void setDirection(int direction);
 		void draw();
 };

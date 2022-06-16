@@ -1,5 +1,7 @@
-﻿# include "stdafx.h"
+﻿# include <Siv3D.hpp>
+
 # include "Boundary.hpp"
+# include "SamplePoint.hpp"
 
 Boundary::Boundary(Line const line)
 {

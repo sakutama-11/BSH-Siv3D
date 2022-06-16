@@ -1,9 +1,8 @@
-﻿# include "stdafx.h"
-
-# ifndef   BOUNDARY_HPP
+﻿# ifndef   BOUNDARY_HPP
 # define   BOUNDARY_HPP
 
-class SamplePoint;
+# include <Siv3D.hpp>
+# include "SamplePoint.hpp"
 
 class Boundary
 {
