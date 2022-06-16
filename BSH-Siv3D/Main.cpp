@@ -1,10 +1,16 @@
 ﻿# include <Siv3D.hpp> // OpenSiv3D v0.6.4
+# include "Boundary.hpp"
+# include "SamplePoint.hpp"
 
 void Main()
 {
 	// 背景の色を設定 | Set background color
 	Scene::SetBackground(ColorF{ 0, 0, 0 });
 	Array<Line> lines;
+	Array<Circle> circles;
+
+	Array<Boundary> boundaries;
+	Array<SamplePoint> samplePoints;
 
 	bool lineOpen = false;
 	Vec2 startPos;
@@ -22,23 +28,44 @@ void Main()
 		{
 			if (lineOpen)
 			{
-				lines << Line(startPos, Cursor::Pos());
+				Line l = Line(startPos, Cursor::Pos());
+				Boundary b = Boundary(l);
+				boundaries << b;
 				lineOpen = false;
 			}
 			else
 			{
-				startPos = Cursor::Pos();
-				lineOpen = true;
+				bool putSample = false;
+				for (const auto& l : lines) {
+					if ( Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 6
+						)
+					{
+						circles << Circle(l.closest(Cursor::Pos()), 4);
+						putSample = true;
+					}
+				}
+				
+				if (!putSample)
+				{
+					startPos = Cursor::Pos();
+					lineOpen = true;
+				}
 			}
 		}
 		if (lineOpen)
 		{
 			Line(startPos, Cursor::Pos()).draw(4, Palette::Red);
 		}
-		for (const auto& line : lines)
+		for (auto& b : boundaries)
 		{
-			line.draw(4, Palette::Orange);
+			b.draw();
 		}
+		for (const auto& c : circles)
+		{
+			c.draw(Palette::Red);
+		}
+
+		// calculate intersections
 		Array<Vec2> points;
         for (int i = 0; i < lines.size(); i++)
         {
@@ -48,12 +75,14 @@ void Main()
 				if (pos.has_value()) {
 					points << pos.value();
 				}
-
             }
         }
+		// sort points by arctan so that points are aligned by clockwise
 		std::sort(points.begin(), points.end(), [](auto const& left, auto const& right) {
 			return std::atan2((left - Scene::Center()).y, (left - Scene::Center()).x) < std::atan2((right - Scene::Center()).y, (right - Scene::Center()).x);
 		});
+
+		// draw polygon
 		Polygon(points).draw(Palette::Red);
 	}
 }
