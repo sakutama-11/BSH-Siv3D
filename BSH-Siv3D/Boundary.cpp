@@ -6,15 +6,15 @@
 Boundary::Boundary(Line const line)
 {
 	m_line = line;
-	m_color = s3d::RandomColor();
+	m_color = RandomColor();
 }
 
-s3d::Line Boundary::getLine()
+Line Boundary::getLine()
 {
 	return m_line;
 }
 
-s3d::Array<SamplePoint> Boundary::getSamplePoints()
+Array<SamplePoint> Boundary::getSamplePoints()
 {
 	return m_sample_points;
 }
@@ -23,7 +23,7 @@ void Boundary::addSamplePoint(Vec2 pos)
 {
 	SamplePoint sample = SamplePoint::SamplePoint(pos);
 	if (!m_sample_points) {
-		m_sample_points = s3d::Array<SamplePoint>();
+		m_sample_points = Array<SamplePoint>();
 	}
 	m_sample_points << sample;
 }
@@ -31,12 +31,12 @@ void Boundary::addSamplePoint(Vec2 pos)
 void Boundary::addSamplePoint(SamplePoint& sample)
 {
 	if (!m_sample_points) {
-		m_sample_points = s3d::Array<SamplePoint>();
+		m_sample_points = Array<SamplePoint>();
 	}
 	m_sample_points << sample;
 }
 
-void Boundary::setColor(s3d::Color color)
+void Boundary::setColor(Color color)
 {
 	m_color = color;
 }
