@@ -1,5 +1,4 @@
-﻿# include "stdafx.h"
-# include "SamplePoint.hpp"
+﻿# include "SamplePoint.hpp"
 
 //SamplePoint::SamplePoint(Boundary boundary, Vec2 pos)
 //{
@@ -18,26 +17,24 @@ SamplePoint::SamplePoint(Vec2 pos)
 	m_point = s3d::Circle(pos, 6);
 	m_direction = 0;
 	
-	static const double pi = 3.141592653589793;
-	m_handle = s3d::Line(pos, pos + Vec2(6 * std::cos(2 * pi / 360 * m_direction), 6 * std::sin(2 * pi / 360 * m_direction));
+	m_handle = s3d::Line(pos, pos + Vec2(10 * std::cos(2 * s3d::Math::Pi / 360 * m_direction), 10 * std::sin(2 * s3d::Math::Pi / 360 * m_direction)));
+	m_t = 0;
 }
 
-SamplePoint::setDirection(int direction)
+void SamplePoint::setDirection(int direction)
 {
 	m_direction = direction;
 	setHandle();
 }
 
-SamplePoint::setHandle()
+void SamplePoint::setHandle()
 {
-	m_direction = direction;
 	Vec2 pos = m_handle.begin;
-	m_handle.set(pos, pos + Vec2(6 * std::cos(2 * pi / 360 * m_direction), 6 * std::sin(2 * pi / 360 * m_direction));
+	m_handle.set(pos, pos + Vec2(6 * std::cos(2 * s3d::Math::Pi / 360 * m_direction), 6 * std::sin(2 * s3d::Math::Pi / 360 * m_direction)));
 }
 
-SamplePoint::draw()
+void SamplePoint::draw(s3d::Color color)
 {
-	m_handle.draw(1, s3d::Palette::Black);
-	m_point.draw(s3d::Palette::Red);
-
+	m_handle.draw(2, color);
+	m_point.draw(color);
 }

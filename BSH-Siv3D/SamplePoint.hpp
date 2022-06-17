@@ -1,4 +1,4 @@
-# pragma once
+﻿# pragma once
 # include <Siv3D.hpp>
 
 class SamplePoint
@@ -15,5 +15,6 @@ class SamplePoint
 	public:
 		SamplePoint( Vec2 pos );
 		void setDirection(int direction);
-		void draw();
+		void setHandle();
+		void draw(s3d::Color color);
 };

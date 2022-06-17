@@ -36,11 +36,11 @@ void Main()
 			else
 			{
 				bool putSample = false;
-				for (const auto& l : lines) {
-					if ( Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 6
+				for ( auto& b : boundaries) {
+					if ( Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 6
 						)
 					{
-						circles << Circle(l.closest(Cursor::Pos()), 4);
+						b.addSamplePoint(b.getLine().closest(Cursor::Pos()));
 						putSample = true;
 					}
 				}
@@ -60,18 +60,14 @@ void Main()
 		{
 			b.draw();
 		}
-		for (const auto& c : circles)
-		{
-			c.draw(Palette::Red);
-		}
 
 		// calculate intersections
 		Array<Vec2> points;
-        for (int i = 0; i < lines.size(); i++)
+        for (int i = 0; i < boundaries.size(); i++)
         {
-            for (int j = i+1; j < lines.size(); j++)
+            for (int j = i+1; j < boundaries.size(); j++)
             {
-				auto pos = lines[i].intersectsAt(lines[j]);
+				auto pos = boundaries[i].getLine().intersectsAt(boundaries[j].getLine());
 				if (pos.has_value()) {
 					points << pos.value();
 				}

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 # include <Siv3D.hpp>
 # include "SamplePoint.hpp"
@@ -14,6 +14,7 @@ class Boundary
 		Boundary(Line const line);
 		s3d::Line getLine();
 		s3d::Array<SamplePoint> getSamplePoints();
+		void addSamplePoint(Vec2 pos);
 		void addSamplePoint(SamplePoint& sample);
 		void setColor(s3d::Color color);
 		void draw();
