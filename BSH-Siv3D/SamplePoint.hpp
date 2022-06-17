@@ -1,6 +1,4 @@
-﻿# ifndef   SAMPLE_POINT_HPP
-# define   SAMPLE_POINT_HPP
-
+# pragma once
 # include <Siv3D.hpp>
 
 class SamplePoint
@@ -19,5 +17,3 @@ class SamplePoint
 		void setDirection(int direction);
 		void draw();
 };
-
-# endif // SAMPLE_POINT_HPP

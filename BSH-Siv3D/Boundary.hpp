@@ -1,25 +1,20 @@
-﻿# ifndef   BOUNDARY_HPP
-# define   BOUNDARY_HPP
+#pragma once
 
 # include <Siv3D.hpp>
 # include "SamplePoint.hpp"
 
 class Boundary
 {
-	// variable
 	private:
-		s3d::Line line;
-		s3d::Array<SamplePoint> sample_points;
-		Color color;
+		s3d::Line m_line;
+		s3d::Array<SamplePoint> m_sample_points;
+		s3d::Color m_color;
 
-	// acsessor
 	public:
-		Boundary( Line const line );
+		Boundary(Line const line);
 		s3d::Line getLine();
 		s3d::Array<SamplePoint> getSamplePoints();
 		void addSamplePoint(SamplePoint& sample);
 		void setColor(s3d::Color color);
 		void draw();
 };
-
-#endif // BOUNDARY_HPP
