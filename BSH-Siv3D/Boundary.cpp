@@ -7,14 +7,15 @@ Boundary::Boundary(Line const line)
 {
 	m_line = line;
 	m_color = RandomColor();
+	m_sample_points = Array<SamplePoint>();
 }
 
-Line Boundary::getLine()
+Line Boundary::getLine() const
 {
 	return m_line;
 }
 
-Array<SamplePoint> Boundary::getSamplePoints()
+Array<SamplePoint>& Boundary::getSamplePoints()
 {
 	return m_sample_points;
 }
@@ -22,17 +23,11 @@ Array<SamplePoint> Boundary::getSamplePoints()
 void Boundary::addSamplePoint(Vec2 pos)
 {
 	SamplePoint sample = SamplePoint::SamplePoint(pos);
-	if (!m_sample_points) {
-		m_sample_points = Array<SamplePoint>();
-	}
 	m_sample_points << sample;
 }
 
 void Boundary::addSamplePoint(SamplePoint& sample)
 {
-	if (!m_sample_points) {
-		m_sample_points = Array<SamplePoint>();
-	}
 	m_sample_points << sample;
 }
 
@@ -43,8 +38,8 @@ void Boundary::setColor(Color color)
 
 void Boundary::draw()
 {
-	m_line.draw(4, m_color);
 	for (auto& sample : m_sample_points) {
 		sample.draw(m_color);
 	}
+	m_line.draw(4, m_color);
 }

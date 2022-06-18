@@ -12,8 +12,8 @@ class Boundary
 
 	public:
 		Boundary(Line const line);
-		Line getLine();
-		Array<SamplePoint> getSamplePoints();
+		Line getLine() const;
+		Array<SamplePoint>& getSamplePoints();
 		void addSamplePoint(Vec2 pos);
 		void addSamplePoint(SamplePoint& sample);
 		void setColor(Color color);

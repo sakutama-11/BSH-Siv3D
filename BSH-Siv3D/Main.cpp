@@ -4,30 +4,47 @@
 
 void Main()
 {
-	// 背景の色を設定 | Set background color
+	// 背景の色を設定
 	Scene::SetBackground(ColorF{ 0, 0, 0 });
 	Array<Line> lines;
 	Array<Circle> circles;
 
 	Array<Boundary> boundaries;
-	Array<SamplePoint> samplePoints;
 
 	bool lineOpen = false;
+	SamplePoint defaultSample = SamplePoint(Vec2(0, 0));
+	SamplePoint* selectedSample = &defaultSample;
 	Vec2 startPos;
 
 	while (System::Update())
 	{
-        // draw lines
-		if (MouseR.down())
+
+		// ハンドル操作中のサンプルがある場合
+		if (selectedSample != &defaultSample)
 		{
-				lines.remove_if([](const Line& l) {
-					return Line(l.closest(Cursor::Pos()), Cursor::Pos()).length() < 2;
-				});
+			if (MouseL.down())
+			{
+				selectedSample = &defaultSample;
+			}
+			else
+			{
+				selectedSample->setDirectionByPos(Cursor::Pos());
+			}
+		}
+
+		else if (MouseR.down())
+		{
+			// 線上を右クリックで境界を削除
+			boundaries.remove_if([](const Boundary& b) {
+				return Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 2;
+			});
 		}
 		else if (MouseL.down())
 		{
+			// 新しい線分の追加中
 			if (lineOpen)
 			{
+				// 右クリックで境界を決定
 				Line l = Line(startPos, Cursor::Pos());
 				Boundary b = Boundary(l);
 				boundaries << b;
@@ -35,33 +52,45 @@ void Main()
 			}
 			else
 			{
-				bool putSample = false;
+				// サンプルをクリックで内外方向を変更
 				for ( auto& b : boundaries) {
-					if ( Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 6
-						)
-					{
-						b.addSamplePoint(b.getLine().closest(Cursor::Pos()));
-						putSample = true;
+					for (auto& p : b.getSamplePoints()) {
+						if (p.getCircle().leftClicked())
+						{
+							selectedSample = &p;
+							break;
+						}
 					}
 				}
-				
-				if (!putSample)
-				{
-					startPos = Cursor::Pos();
-					lineOpen = true;
+				// 境界上をクリックでサンプルポイントを追加 
+				if (selectedSample == &defaultSample) {
+					bool putSample = false;
+					for (auto& b : boundaries) {
+						if (Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 6)
+						{
+							b.addSamplePoint(b.getLine().closest(Cursor::Pos()));
+							putSample = true;
+							break;
+						}
+					}
+
+					// 何もないところをクリックで新しい境界を追加
+					if (!putSample)
+					{
+						startPos = Cursor::Pos();
+						lineOpen = true;
+					}
 				}
 			}
 		}
+
+		// drawing
 		if (lineOpen)
 		{
+			// 新しい境界を描画
 			Line(startPos, Cursor::Pos()).draw(4, Palette::Red);
 		}
-		for (auto& b : boundaries)
-		{
-			b.draw();
-		}
-
-		// calculate intersections
+		// 境界の交点を計算
 		Array<Vec2> points;
         for (int i = 0; i < boundaries.size(); i++)
         {
@@ -73,13 +102,19 @@ void Main()
 				}
             }
         }
-		// sort points by arctan so that points are aligned by clockwise
+		// 交点が時計回りに並ぶように極座標で整列
 		std::sort(points.begin(), points.end(), [](auto const& left, auto const& right) {
 			return std::atan2((left - Scene::Center()).y, (left - Scene::Center()).x) < std::atan2((right - Scene::Center()).y, (right - Scene::Center()).x);
 		});
 
-		// draw polygon
+		// ポリゴンを描画
 		Polygon(points).draw(Palette::Red);
+
+		// 境界を描画
+		for (auto& b : boundaries)
+		{
+			b.draw();
+		}
 	}
 }
 
