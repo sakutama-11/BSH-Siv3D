@@ -1,6 +1,32 @@
 ﻿# include <Siv3D.hpp> // OpenSiv3D v0.6.4
 # include "Boundary.hpp"
 # include "SamplePoint.hpp"
+#include "State.h"
+
+SamplePoint* findSamplePoint(Array<Boundary>& boundaries)
+{
+	// サンプルをクリックで内外方向を変更
+	for (auto& b : boundaries) {
+		for (auto& p : b.getSamplePoints()) {
+			if (p.getCircle().leftClicked())
+			{
+				return &p;
+			}
+		}
+	}
+	return nullptr;
+}
+
+Boundary* findBoundaryByPos(Vec2 pos, Array<Boundary>& boundaries)
+{
+	for (auto& b : boundaries) {
+		if (Line(b.getLine().closest(pos), pos).length() < 6)
+		{
+			return &b;
+		}
+	}
+	return nullptr;
+}
 
 void Main()
 {
@@ -12,84 +38,77 @@ void Main()
 	Array<Boundary> boundaries;
 
 	bool lineOpen = false;
-	SamplePoint defaultSample = SamplePoint(Vec2(0, 0));
-	SamplePoint* selectedSample = &defaultSample;
+	SamplePoint* selectedSample = nullptr;
 	Vec2 startPos;
+	State state = State::none;
 
 	while (System::Update())
 	{
-
-		// ハンドル操作中のサンプルがある場合
-		if (selectedSample != &defaultSample)
+		switch (state)
 		{
-			if (MouseL.down())
-			{
-				selectedSample = &defaultSample;
-			}
-			else
-			{
-				selectedSample->setDirectionByPos(Cursor::Pos());
-			}
-		}
-
-		else if (MouseR.down())
-		{
-			// 線上を右クリックで境界を削除
-			boundaries.remove_if([](const Boundary& b) {
-				return Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 2;
-			});
-		}
-		else if (MouseL.down())
-		{
-			// 新しい線分の追加中
-			if (lineOpen)
-			{
-				// 右クリックで境界を決定
-				Line l = Line(startPos, Cursor::Pos());
-				Boundary b = Boundary(l);
-				boundaries << b;
-				lineOpen = false;
-			}
-			else
-			{
-				// サンプルをクリックで内外方向を変更
-				for ( auto& b : boundaries) {
-					for (auto& p : b.getSamplePoints()) {
-						if (p.getCircle().leftClicked())
-						{
-							selectedSample = &p;
-							break;
-						}
+			case State::none:
+				if (MouseL.down())
+				{
+					// サンプルをクリックで内外方向を変更
+					SamplePoint* clickedPoint = findSamplePoint(boundaries);
+					if (clickedPoint)
+					{
+						selectedSample = clickedPoint;
+						state = State::sampleSelecting;
+						break;
 					}
-				}
-				// 境界上をクリックでサンプルポイントを追加 
-				if (selectedSample == &defaultSample) {
-					bool putSample = false;
-					for (auto& b : boundaries) {
-						if (Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 6)
-						{
-							b.addSamplePoint(b.getLine().closest(Cursor::Pos()));
-							putSample = true;
-							break;
-						}
+
+					// 境界をクリックで内外方向を変更
+					Boundary* b = findBoundaryByPos(Cursor::Pos(), boundaries);
+					if (b)
+					{
+						b->addSamplePoint(b->getLine().closest(Cursor::Pos()));
+						break;
 					}
 
 					// 何もないところをクリックで新しい境界を追加
-					if (!putSample)
-					{
-						startPos = Cursor::Pos();
-						lineOpen = true;
-					}
+					startPos = Cursor::Pos();
+					state = State::lineDrawing;
+					break;
 				}
-			}
+				else if (MouseR.down())
+				{
+					// 線上を右クリックで境界を削除
+					boundaries.remove_if([](const Boundary& b) {
+						return Line(b.getLine().closest(Cursor::Pos()), Cursor::Pos()).length() < 2;
+					});
+					break;
+				}
+				break;
+			// サンプルが選択されているとき
+			case State::sampleSelecting:
+				if (MouseL.down())
+				{
+					// 左クリックでサンプルポイントの方向を固定
+					selectedSample = nullptr;
+					state = State::none;
+					break;
+				}
+				// サンプルの方向を更新
+				selectedSample->setDirectionByPos(Cursor::Pos());
+				break;
+			// 新しい線の描画中
+			case State::lineDrawing:
+				if (MouseL.down())
+				{
+					// 左クリックで境界を決定
+					Line l = Line(startPos, Cursor::Pos());
+					Boundary b = Boundary(l);
+					boundaries << b;
+					state = State::none;
+				}
+				// 新しい境界を描画
+				Line(startPos, Cursor::Pos()).draw(4, Palette::Red);
+				break;
+			default:
+				break;
 		}
 
-		// drawing
-		if (lineOpen)
-		{
-			// 新しい境界を描画
-			Line(startPos, Cursor::Pos()).draw(4, Palette::Red);
-		}
 		// 境界の交点を計算
 		Array<Vec2> points;
         for (int i = 0; i < boundaries.size(); i++)

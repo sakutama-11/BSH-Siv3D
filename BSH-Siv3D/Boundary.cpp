@@ -22,7 +22,7 @@ Array<SamplePoint>& Boundary::getSamplePoints()
 
 void Boundary::addSamplePoint(Vec2 pos)
 {
-	SamplePoint sample = SamplePoint::SamplePoint(pos);
+	SamplePoint sample(pos);
 	m_sample_points << sample;
 }
 
