@@ -1,7 +1,7 @@
 ﻿# include <Siv3D.hpp> // OpenSiv3D v0.6.4
 # include "Boundary.hpp"
 # include "SamplePoint.hpp"
-#include "State.h"
+# include "State.h"
 
 SamplePoint* findSamplePoint(Array<SamplePoint>& samplePoints)
 {
@@ -97,8 +97,7 @@ void Main()
 				if (MouseL.down())
 				{
 					// 左クリックで境界を決定
-					Line l = Line(startPos, Cursor::Pos());
-					Boundary b = Boundary(l);
+					Boundary b = Boundary(startPos, Cursor::Pos(), Scene::Size());
 					boundaries << b;
 					state = State::none;
 				}

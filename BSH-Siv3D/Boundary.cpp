@@ -2,9 +2,24 @@
 
 # include "Boundary.hpp"
 
-Boundary::Boundary(Line const line)
+Boundary::Boundary(Vec2 begin, Vec2 end, Vec2 sceneSize)
 {
-	m_line = line;
+	if (begin.x == end.x)
+	{
+		m_line = Line(begin.x, 0, end.x, sceneSize.y);
+	}
+	else
+	{
+		Rect rect(0, 0, sceneSize.x, sceneSize.y);
+		Vec2 b(0, -begin.x * (end - begin).y / (end - begin).x + begin.y);
+		Vec2 e(sceneSize.x, (sceneSize.x + 1.f -begin.x) * (end - begin).y / (end - begin).x + begin.y);
+		Line longLine(b, e);
+		if (const auto points = rect.intersectsAt(longLine))
+		{
+			rect.draw(Palette::Skyblue);
+			m_line = Line(points.value()[0], points.value()[1]);
+		}
+	}
 	m_color = RandomColor();
 }
 

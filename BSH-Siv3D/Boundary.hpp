@@ -9,7 +9,7 @@ class Boundary
 		Color m_color;
 
 	public:
-		Boundary(Line const line);
+		Boundary(Vec2 begin, Vec2 end, Vec2 sceneSize);
 		Line getLine() const;
 		Color getColor() const;
 		void setColor(Color color);
