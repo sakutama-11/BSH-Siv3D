@@ -3,15 +3,13 @@
 # include "SamplePoint.hpp"
 #include "State.h"
 
-SamplePoint* findSamplePoint(Array<Boundary>& boundaries)
+SamplePoint* findSamplePoint(Array<SamplePoint>& samplePoints)
 {
 	// サンプルをクリックで内外方向を変更
-	for (auto& b : boundaries) {
-		for (auto& p : b.getSamplePoints()) {
-			if (p.getCircle().leftClicked())
-			{
-				return &p;
-			}
+	for (auto& p : samplePoints) {
+		if (p.getCircle().leftClicked())
+		{
+			return &p;
 		}
 	}
 	return nullptr;
@@ -36,11 +34,12 @@ void Main()
 	Array<Circle> circles;
 
 	Array<Boundary> boundaries;
+	Array<SamplePoint> samplePoints;
 
-	bool lineOpen = false;
+	State state = State::none;
+
 	SamplePoint* selectedSample = nullptr;
 	Vec2 startPos;
-	State state = State::none;
 
 	while (System::Update())
 	{
@@ -50,7 +49,7 @@ void Main()
 				if (MouseL.down())
 				{
 					// サンプルをクリックで内外方向を変更
-					SamplePoint* clickedPoint = findSamplePoint(boundaries);
+					SamplePoint* clickedPoint = findSamplePoint(samplePoints);
 					if (clickedPoint)
 					{
 						selectedSample = clickedPoint;
@@ -58,11 +57,12 @@ void Main()
 						break;
 					}
 
-					// 境界をクリックで内外方向を変更
+					// 境界をクリックでサンプルポイントを追加
 					Boundary* b = findBoundaryByPos(Cursor::Pos(), boundaries);
 					if (b)
 					{
-						b->addSamplePoint(b->getLine().closest(Cursor::Pos()));
+						SamplePoint newSample(b->getLine().closest(Cursor::Pos()), b);
+						samplePoints << newSample;
 						break;
 					}
 
@@ -133,6 +133,12 @@ void Main()
 		for (auto& b : boundaries)
 		{
 			b.draw();
+		}
+
+		// サンプルを描画
+		for (auto& s : samplePoints)
+		{
+			s.draw();
 		}
 	}
 }
