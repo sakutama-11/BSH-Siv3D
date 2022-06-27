@@ -39,6 +39,11 @@ float SamplePoint::getDirection()
 	return m_direction;
 }
 
+Boundary SamplePoint::getBoundary() const
+{
+	return *m_boundary;
+}
+
 void SamplePoint::setDirection(float direction)
 {
 	m_direction = direction;

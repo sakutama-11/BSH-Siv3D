@@ -18,6 +18,7 @@ class SamplePoint
 		Vec2 getPos();
 		Circle getCircle();
 		float getDirection();
+		Boundary getBoundary() const;
 		void setDirection(float direction);
 		void setHandle();
 		void draw();
