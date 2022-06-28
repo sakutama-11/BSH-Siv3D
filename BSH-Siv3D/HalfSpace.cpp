@@ -70,6 +70,11 @@ Polygon HalfSpace::getPolygon() const
 	return Polygon(m_vertices);
 }
 
+void HalfSpace::setInside(bool inside)
+{
+	is_inside = inside;
+}
+
 Array<Vec2> HalfSpace::getVertices() const
 {
 	return m_vertices;
@@ -82,7 +87,7 @@ Array<SamplePoint> HalfSpace::getSamples() const
 
 void HalfSpace::draw() const
 {
-	Print << m_vertices << is_inside;
+	//Print << m_vertices << is_inside;
 
 	if (is_inside)
 	{

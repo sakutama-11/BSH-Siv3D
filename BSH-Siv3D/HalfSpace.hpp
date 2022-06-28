@@ -12,6 +12,7 @@ class HalfSpace
 	public:
 		static Array<HalfSpace> divideBySample(HalfSpace parent, SamplePoint sample);
 		HalfSpace(Array<SamplePoint> samplePoints, Array<Vec2> vertices, bool inside);
+		void setInside(bool inside);
 		Polygon getPolygon() const;
 		Array<Vec2> getVertices() const;
 		Array<SamplePoint> getSamples() const;

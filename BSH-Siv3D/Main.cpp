@@ -40,24 +40,41 @@ SamplePoint* checkIntersect(HalfSpace halfSpace, Array<SamplePoint>& samplePoint
 	return nullptr;
 }
 
-Array<HalfSpace> setHalfSpaces( Array<SamplePoint> samplePoints, Array<Boundary> boundaries)
+Array<HalfSpace> additionalHalfSpace(Array<HalfSpace>& halfSpaces, Array<SamplePoint> samplePoints)
 {
-	Array<HalfSpace> halfSpaces = Array<HalfSpace>();
-	Array<Vec2> sceneRect = Array{ Vec2(0, 0), Vec2(Scene::Size().x, 0) , Vec2(Scene::Size().x, Scene::Size().y) , Vec2(0, Scene::Size().y) };
-	HalfSpace sceneHalfSpace = HalfSpace(Array<SamplePoint>(), sceneRect, false);
-	halfSpaces << sceneHalfSpace;
+	Array<HalfSpace> newHalfSpaces = Array<HalfSpace>();
 	for (auto it = halfSpaces.begin(); it != halfSpaces.end();)
 	{
 		if (auto s = checkIntersect(*it, samplePoints))
 		{
-			halfSpaces.append(HalfSpace::divideBySample(*it, *s));
+			newHalfSpaces.append(HalfSpace::divideBySample(*it, *s));
+			//(* it).setInside(false);
 			it = halfSpaces.erase(it);
+			return newHalfSpaces;
 		}
 		else
 		{
 			++it;
 		}
 	}
+	return newHalfSpaces;
+
+}
+
+Array<HalfSpace> setHalfSpaces( Array<SamplePoint>& samplePoints, Array<Boundary> boundaries)
+{
+	Array<HalfSpace> halfSpaces = Array<HalfSpace>();
+	Array<Vec2> sceneRect = Array{ Vec2(0, 0), Vec2(Scene::Size().x, 0) , Vec2(Scene::Size().x, Scene::Size().y) , Vec2(0, Scene::Size().y) };
+	HalfSpace sceneHalfSpace = HalfSpace(Array<SamplePoint>(), sceneRect, false);
+	halfSpaces << sceneHalfSpace;
+
+	Array<HalfSpace> newHalfSpaces = additionalHalfSpace(halfSpaces, samplePoints);
+	while (newHalfSpaces.size() > 0)
+	{
+		halfSpaces.append(newHalfSpaces);
+		newHalfSpaces = additionalHalfSpace(halfSpaces, samplePoints);
+	}
+
 	return halfSpaces;
 }
 
