@@ -1,17 +1,16 @@
 ﻿# include <Siv3D.hpp> // OpenSiv3D v0.6.4
 # include "Boundary.hpp"
 # include "SamplePoint.hpp"
-#include "State.h"
+# include "State.h"
+#include "HalfSpace.hpp"
 
-SamplePoint* findSamplePoint(Array<Boundary>& boundaries)
+SamplePoint* findSamplePoint(Array<SamplePoint>& samplePoints)
 {
 	// サンプルをクリックで内外方向を変更
-	for (auto& b : boundaries) {
-		for (auto& p : b.getSamplePoints()) {
-			if (p.getCircle().leftClicked())
-			{
-				return &p;
-			}
+	for (auto& p : samplePoints) {
+		if (p.getCircle().leftClicked())
+		{
+			return &p;
 		}
 	}
 	return nullptr;
@@ -28,6 +27,57 @@ Boundary* findBoundaryByPos(Vec2 pos, Array<Boundary>& boundaries)
 	return nullptr;
 }
 
+SamplePoint* checkIntersect(HalfSpace halfSpace, Array<SamplePoint>& samplePoints)
+{
+	for (auto& s : samplePoints)
+	{
+		// 半空間内にサンプルポイントがあった
+		if (halfSpace.getPolygon().contains(s.getCircle()))
+		{
+			return &s;
+		}
+	}
+	return nullptr;
+}
+
+Array<HalfSpace> additionalHalfSpace(Array<HalfSpace>& halfSpaces, Array<SamplePoint> samplePoints)
+{
+	Array<HalfSpace> newHalfSpaces = Array<HalfSpace>();
+	for (auto it = halfSpaces.begin(); it != halfSpaces.end();)
+	{
+		if (auto s = checkIntersect(*it, samplePoints))
+		{
+			newHalfSpaces.append(HalfSpace::divideBySample(*it, *s));
+			//(* it).setInside(false);
+			it = halfSpaces.erase(it);
+			return newHalfSpaces;
+		}
+		else
+		{
+			++it;
+		}
+	}
+	return newHalfSpaces;
+
+}
+
+Array<HalfSpace> setHalfSpaces( Array<SamplePoint>& samplePoints, Array<Boundary> boundaries)
+{
+	Array<HalfSpace> halfSpaces = Array<HalfSpace>();
+	Array<Vec2> sceneRect = Array{ Vec2(0, 0), Vec2(Scene::Size().x, 0) , Vec2(Scene::Size().x, Scene::Size().y) , Vec2(0, Scene::Size().y) };
+	HalfSpace sceneHalfSpace = HalfSpace(Array<SamplePoint>(), sceneRect, false);
+	halfSpaces << sceneHalfSpace;
+
+	Array<HalfSpace> newHalfSpaces = additionalHalfSpace(halfSpaces, samplePoints);
+	while (newHalfSpaces.size() > 0)
+	{
+		halfSpaces.append(newHalfSpaces);
+		newHalfSpaces = additionalHalfSpace(halfSpaces, samplePoints);
+	}
+
+	return halfSpaces;
+}
+
 void Main()
 {
 	// 背景の色を設定
@@ -36,11 +86,13 @@ void Main()
 	Array<Circle> circles;
 
 	Array<Boundary> boundaries;
+	Array<SamplePoint> samplePoints;
+	Array<HalfSpace> halfSpaces;
 
-	bool lineOpen = false;
+	State state = State::none;
+
 	SamplePoint* selectedSample = nullptr;
 	Vec2 startPos;
-	State state = State::none;
 
 	while (System::Update())
 	{
@@ -50,7 +102,7 @@ void Main()
 				if (MouseL.down())
 				{
 					// サンプルをクリックで内外方向を変更
-					SamplePoint* clickedPoint = findSamplePoint(boundaries);
+					SamplePoint* clickedPoint = findSamplePoint(samplePoints);
 					if (clickedPoint)
 					{
 						selectedSample = clickedPoint;
@@ -58,11 +110,14 @@ void Main()
 						break;
 					}
 
-					// 境界をクリックで内外方向を変更
+					// 境界をクリックでサンプルポイントを追加
 					Boundary* b = findBoundaryByPos(Cursor::Pos(), boundaries);
 					if (b)
 					{
-						b->addSamplePoint(b->getLine().closest(Cursor::Pos()));
+						
+						SamplePoint newSample(b->getLine().closest(Cursor::Pos()), b);
+						samplePoints << newSample;
+						halfSpaces = setHalfSpaces(samplePoints, boundaries);
 						break;
 					}
 
@@ -87,6 +142,7 @@ void Main()
 					// 左クリックでサンプルポイントの方向を固定
 					selectedSample = nullptr;
 					state = State::none;
+					halfSpaces = setHalfSpaces(samplePoints, boundaries);
 					break;
 				}
 				// サンプルの方向を更新
@@ -97,8 +153,7 @@ void Main()
 				if (MouseL.down())
 				{
 					// 左クリックで境界を決定
-					Line l = Line(startPos, Cursor::Pos());
-					Boundary b = Boundary(l);
+					Boundary b = Boundary(startPos, Cursor::Pos(), Scene::Size());
 					boundaries << b;
 					state = State::none;
 				}
@@ -109,30 +164,40 @@ void Main()
 				break;
 		}
 
-		// 境界の交点を計算
-		Array<Vec2> points;
-        for (int i = 0; i < boundaries.size(); i++)
-        {
-            for (int j = i+1; j < boundaries.size(); j++)
-            {
-				auto pos = boundaries[i].getLine().intersectsAt(boundaries[j].getLine());
-				if (pos.has_value()) {
-					points << pos.value();
-				}
-            }
-        }
-		// 交点が時計回りに並ぶように極座標で整列
-		std::sort(points.begin(), points.end(), [](auto const& left, auto const& right) {
-			return std::atan2((left - Scene::Center()).y, (left - Scene::Center()).x) < std::atan2((right - Scene::Center()).y, (right - Scene::Center()).x);
-		});
+		//// 境界の交点を計算
+		//Array<Vec2> points;
+  //      for (int i = 0; i < boundaries.size(); i++)
+  //      {
+  //          for (int j = i+1; j < boundaries.size(); j++)
+  //          {
+		//		auto pos = boundaries[i].getLine().intersectsAt(boundaries[j].getLine());
+		//		if (pos.has_value()) {
+		//			points << pos.value();
+		//		}
+  //          }
+  //      }
+		//// 交点が時計回りに並ぶように極座標で整列
+		//std::sort(points.begin(), points.end(), [](auto const& left, auto const& right) {
+		//	return std::atan2((left - Scene::Center()).y, (left - Scene::Center()).x) < std::atan2((right - Scene::Center()).y, (right - Scene::Center()).x);
+		//});
 
-		// ポリゴンを描画
-		Polygon(points).draw(Palette::Red);
+		//// ポリゴンを描画
+		//Polygon(points).draw(Palette::Red);
+		for (auto& h : halfSpaces)
+		{
+			h.draw();
+		}
 
 		// 境界を描画
 		for (auto& b : boundaries)
 		{
 			b.draw();
+		}
+
+		// サンプルを描画
+		for (auto& s : samplePoints)
+		{
+			s.draw();
 		}
 	}
 }

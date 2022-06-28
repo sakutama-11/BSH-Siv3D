@@ -1,4 +1,5 @@
 ﻿# include "SamplePoint.hpp"
+# include "Boundary.hpp"
 
 //SamplePoint::SamplePoint(Boundary boundary, Vec2 pos)
 //{
@@ -12,9 +13,11 @@
 //	m_handle = Line(pos, pos + Vec2(6 * std::cos(2 * pi / 360 * m_direction), 6 * std::sin(2 * pi / 360 * m_direction));
 //}
 
-SamplePoint::SamplePoint(Vec2 pos)
+SamplePoint::SamplePoint(Vec2 pos, Boundary* boundary)
 {
+	m_boundary = boundary;
 	m_point = Circle(pos, 6);
+	m_color = boundary->getColor();
 	m_direction = 0;
 	m_handle = Line();
 	setHandle();
@@ -36,6 +39,11 @@ float SamplePoint::getDirection()
 	return m_direction;
 }
 
+Boundary SamplePoint::getBoundary() const
+{
+	return *m_boundary;
+}
+
 void SamplePoint::setDirection(float direction)
 {
 	m_direction = direction;
@@ -48,10 +56,10 @@ void SamplePoint::setHandle()
 	m_handle.set(pos, pos + Vec2(8 * std::cos(m_direction), 8 * std::sin(m_direction)));
 }
 
-void SamplePoint::draw(Color color)
+void SamplePoint::draw()
 {
-	m_handle.draw(2, color);
-	m_point.draw(color);
+	m_handle.draw(2, m_color);
+	m_point.draw(m_color);
 }
 
 void SamplePoint::setPos(Vec2 pos)

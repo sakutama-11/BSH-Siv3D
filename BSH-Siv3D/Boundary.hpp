@@ -1,21 +1,17 @@
 ﻿#pragma once
 
 # include <Siv3D.hpp>
-# include "SamplePoint.hpp"
 
 class Boundary
 {
 	private:
 		Line m_line;
-		Array<SamplePoint> m_sample_points;
 		Color m_color;
 
 	public:
-		Boundary(Line const line);
+		Boundary(Vec2 begin, Vec2 end, Vec2 sceneSize);
 		Line getLine() const;
-		Array<SamplePoint>& getSamplePoints();
-		void addSamplePoint(Vec2 pos);
-		void addSamplePoint(SamplePoint& sample);
+		Color getColor() const;
 		void setColor(Color color);
-		void draw();
+		void draw() const;
 };
